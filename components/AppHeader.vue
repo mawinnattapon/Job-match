@@ -32,7 +32,7 @@ const toggleMobileMenu = () => {
             <NuxtLink to="/work" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium" active-class="border-green-500 text-gray-900">
               งานแนะนำ
             </NuxtLink>
-            <NuxtLink to="/history" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium" active-class="border-green-500 text-gray-900">
+            <NuxtLink to="/applications" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium" active-class="border-green-500 text-gray-900">
               ประวัติการสมัคร
             </NuxtLink>
             <NuxtLink to="/profile" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium" active-class="border-green-500 text-gray-900">
