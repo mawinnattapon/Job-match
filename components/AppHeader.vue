@@ -1,17 +1,62 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { navigateTo } from '#app'
 
 // สถานะสำหรับเมนูมือถือ
 const isMobileMenuOpen = ref(false)
+const isUserMenuOpen = ref(false)
 
 // ฟังก์ชันเปิด/ปิดเมนูมือถือ
 const toggleMobileMenu = () => {
   isMobileMenuOpen.value = !isMobileMenuOpen.value
 }
+
+// ฟังก์ชันสำหรับเปิด/ปิดเมนูผู้ใช้
+const toggleUserMenu = () => {
+  isUserMenuOpen.value = !isUserMenuOpen.value
+}
+
+// ฟังก์ชันปิดเมนูเมื่อคลิกข้างนอก
+const handleClickOutside = (event: Event) => {
+  const target = event.target as HTMLElement
+  if (!target.closest('#user-menu-button') && !target.closest('.user-dropdown')) {
+    isUserMenuOpen.value = false
+  }
+  if (!target.closest('.mobile-menu-button') && !target.closest('.mobile-menu')) {
+    isMobileMenuOpen.value = false
+  }
+}
+
+// เพิ่ม event listener เมื่อ component mount
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+// ลบ event listener เมื่อ component unmount
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+
+// ฟังก์ชันสำหรับออกจากระบบ
+const logout = () => {
+  // ปิดเมนูทั้งหมด
+  isMobileMenuOpen.value = false
+  isUserMenuOpen.value = false
+  
+  // แสดงการยืนยัน
+  if (confirm('คุณต้องการออกจากระบบหรือไม่?')) {
+    // ในเวอร์ชันจริงจะทำการล้างข้อมูล session/token
+    // localStorage.removeItem('token')
+    // sessionStorage.clear()
+    
+    // นำทางไปยังหน้า login
+    navigateTo('/login')
+  }
+}
 </script>
 
 <template>
-  <nav class="bg-white shadow-sm">
+  <nav class="bg-white shadow-lg relative z-30">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16">
         <!-- Logo and Brand -->
@@ -38,6 +83,12 @@ const toggleMobileMenu = () => {
             <NuxtLink to="/profile" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium" active-class="border-green-500 text-gray-900">
               โปรไฟล์
             </NuxtLink>
+            <NuxtLink to="/resume" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium" active-class="border-green-500 text-gray-900">
+              เรซูเม่
+            </NuxtLink>
+            <NuxtLink to="/company/dashboard" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium" active-class="border-green-500 text-gray-900">
+              บริษัท
+            </NuxtLink>
           </div>
         </div>
         
@@ -53,9 +104,33 @@ const toggleMobileMenu = () => {
           <!-- Profile dropdown -->
           <div class="ml-3 relative">
             <div>
-              <button type="button" class="bg-white flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" id="user-menu-button">
+              <button 
+                @click="toggleUserMenu" 
+                type="button" 
+                id="user-menu-button"
+                class="bg-white flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" 
+              >
                 <span class="sr-only">เปิดเมนูผู้ใช้</span>
                 <img class="h-8 w-8 rounded-full" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="">
+              </button>
+            </div>
+            
+            <!-- Dropdown menu -->
+            <div 
+              v-if="isUserMenuOpen" 
+              class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none user-dropdown z-50"
+            >
+              <NuxtLink to="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" @click="isUserMenuOpen = false">
+                โปรไฟล์ของคุณ
+              </NuxtLink>
+              <NuxtLink to="/applications" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" @click="isUserMenuOpen = false">
+                ประวัติการสมัครงาน
+              </NuxtLink>
+              <NuxtLink to="/resume" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" @click="isUserMenuOpen = false">
+                เรซูเม่
+              </NuxtLink>
+              <button @click="logout" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                ออกจากระบบ
               </button>
             </div>
           </div>
@@ -66,7 +141,7 @@ const toggleMobileMenu = () => {
           <button 
             @click="toggleMobileMenu" 
             type="button" 
-            class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-500"
+            class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-500 mobile-menu-button"
             :aria-expanded="isMobileMenuOpen"
           >
             <span class="sr-only">เปิดเมนูหลัก</span>
@@ -100,7 +175,7 @@ const toggleMobileMenu = () => {
     </div>
 
     <!-- Mobile menu, show/hide based on menu state -->
-    <div v-if="isMobileMenuOpen" class="sm:hidden">
+    <div v-if="isMobileMenuOpen" class="sm:hidden mobile-menu z-40">
       <div class="pt-2 pb-3 space-y-1">
         <NuxtLink to="/" class="bg-white border-l-4 border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 text-base font-medium" active-class="bg-green-50 border-green-500 text-green-700">
           หน้าหลัก
@@ -113,6 +188,9 @@ const toggleMobileMenu = () => {
         </NuxtLink>
         <NuxtLink to="/profile" class="bg-white border-l-4 border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 text-base font-medium" active-class="bg-green-50 border-green-500 text-green-700">
           โปรไฟล์
+        </NuxtLink>
+        <NuxtLink to="/resume" class="bg-white border-l-4 border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 text-base font-medium" active-class="bg-green-50 border-green-500 text-green-700">
+          เรซูเม่
         </NuxtLink>
       </div>
       <div class="pt-4 pb-3 border-t border-gray-200">
@@ -132,15 +210,18 @@ const toggleMobileMenu = () => {
           </button>
         </div>
         <div class="mt-3 space-y-1">
-          <a href="#" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
+          <NuxtLink to="/profile" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100" @click="isMobileMenuOpen = false">
             โปรไฟล์ของคุณ
-          </a>
-          <a href="#" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
-            การตั้งค่า
-          </a>
-          <a href="/login" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
+          </NuxtLink>
+          <NuxtLink to="/applications" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100" @click="isMobileMenuOpen = false">
+            ประวัติการสมัครงาน
+          </NuxtLink>
+          <NuxtLink to="/resume" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100" @click="isMobileMenuOpen = false">
+            เรซูเม่
+          </NuxtLink>
+          <button @click="logout" class="block w-full text-left px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
             ออกจากระบบ
-          </a>
+          </button>
         </div>
       </div>
     </div>
